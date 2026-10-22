@@ -1,9 +1,7 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using System;
-using Microsoft.MixedReality.Toolkit.UI;
 namespace DataVisualization.Plotter
 {
     public class DataPlotter : MonoBehaviour
@@ -62,6 +60,31 @@ namespace DataVisualization.Plotter
         // Use this for initialization
         void Awake()
         {
+            // The plot helpers AddComponent this before assigning fields and then Instantiate the
+            // configured copy; skip the unconfigured template instead of throwing.
+            if (PointHolder == null)
+            {
+                return;
+            }
+
+            if (Xpoints == null || Ypoints == null || Xpoints.Count == 0 || Xpoints.Count != Ypoints.Count)
+            {
+                Debug.LogWarning("DataPlotter needs the same, non-zero number of X and Y values.");
+                return;
+            }
+
+            if (Zpoints != null && Zpoints.Count > 0 && Zpoints.Count != Xpoints.Count)
+            {
+                Debug.LogWarning("DataPlotter Z values do not match X/Y; plotting in 2D.");
+                Zpoints.Clear();
+            }
+
+            // Keep this component (it has no visuals) inside the plot so it is destroyed with it
+            if (transform.parent != PointHolder.transform)
+            {
+                transform.SetParent(PointHolder.transform, false);
+            }
+
             //if Zpoints was left out initalize it to zeros (2D scatter plot)
             if (Zpoints.Count == 0)
             {
@@ -123,7 +146,7 @@ namespace DataVisualization.Plotter
                 // Scale dataPoint depending on Plot scale
                 dataPoint.transform.localScale = new Vector3(0.03f, 0.03f, 0.03f) * plotScale;
                 //set point colours
-                if (colours != null && colours.Count > 0)
+                if (colours != null && i < colours.Count)
                 {
                     dataPoint.GetComponent<Renderer>().material.color = colours[i];
                 }
@@ -194,21 +217,8 @@ namespace DataVisualization.Plotter
             BoxCollider boxCollider = PointHolder.AddComponent<BoxCollider>();
             PointHolder.transform.gameObject.GetComponent<BoxCollider>().size = new Vector3(Util.Normalize(xMax, xMax, xMin), Util.Normalize(yMax, yMax, yMin), Util.Normalize(zMax, zMax, zMin)) * plotScale;
 
-            PointHolder.AddComponent<BoundingBox>();
-            PointHolder.GetComponent<BoundingBox>().WireframeEdgeRadius= PointHolder.GetComponent<BoundingBox>().WireframeEdgeRadius * plotScale;
-            PointHolder.GetComponent<BoundingBox>().WireframeMaterial.color = Color.white;
-            PointHolder.AddComponent<ManipulationHandler>();
-
-            //scale handle sizes
-            PointHolder.GetComponent<BoundingBox>().ScaleHandleSize= PointHolder.GetComponent<BoundingBox>().ScaleHandleSize * plotScale;
-            PointHolder.GetComponent<BoundingBox>().RotationHandleSize= PointHolder.GetComponent<BoundingBox>().RotationHandleSize * plotScale;
-
-
-            //Optional handle prefab Models
-            PointHolder.GetComponent<BoundingBox>().HandleGrabbedMaterial=handelGrabbedMaterial;
-            PointHolder.GetComponent<BoundingBox>().HandleMaterial= handleMaterial;
-            PointHolder.GetComponent<BoundingBox>().ScaleHandlePrefab=scaleHandle;
-            PointHolder.GetComponent<BoundingBox>().RotationHandleSlatePrefab=rotationHandle;
+            // Bounds handles + grab/move/rotate/scale (MRTK3)
+            Manipulation.MakeManipulable(PointHolder);
         }
     }
 }

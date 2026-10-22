@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using CSVis.ExampleLoader.Helper;
 using CSVis.IO;
@@ -49,7 +50,7 @@ namespace CSVis.ExampleLoader
             var colors = Enumerable.Range(0, count).Select(i => new Color(138,43,226)).ToList();
 
             var locationStrings = Enumerable.Range(0, count).Select(i =>
-                columnsByName[LongitudeIndex][i].ToString("n4") + ", " + columnsByName[LatitudeIndex][i].ToString("n4")
+                columnsByName[LongitudeIndex][i].ToString("F6", CultureInfo.InvariantCulture) + ", " + columnsByName[LatitudeIndex][i].ToString("F6", CultureInfo.InvariantCulture)
             ).ToList();
 
             var data = new GeoMapPlotHelper.GeoMapData(

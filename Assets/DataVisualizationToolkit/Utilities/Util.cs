@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 namespace DataVisualization
@@ -23,10 +23,10 @@ namespace DataVisualization
 
         public static float Normalize(float value, float max, float min)
         {
-            //if values are all zero or constant
-            if (max - min == 0)
+            // Constant axis (including all zeros): avoid dividing by zero and keep the data on the axis origin
+            if (Mathf.Approximately(max, min))
             {
-                return value;
+                return 0f;
             }
             else
             {

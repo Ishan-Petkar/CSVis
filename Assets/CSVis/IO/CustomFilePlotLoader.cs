@@ -1,203 +1,324 @@
-﻿
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using CSVis.Core;
 using CSVis.ExampleLoader;
 using CSVis.ExampleLoader.Helper;
 using UnityEngine;
 
 namespace CSVis.IO
 {
+    /// <summary>
+    /// Turns a user supplied CSV into a plot. The layout is inferred from the number of columns:
+    /// <list type="bullet">
+    /// <item>2 columns: 2D static plot (X, Y)</item>
+    /// <item>3 columns: 3D static plot (X, Y, Z)</item>
+    /// <item>1 + 3n columns: dynamic plot with n animated points (time, then X, Y, Z for each point)</item>
+    /// <item>6 columns: geographic map (latitude, longitude, height, R, G, B)</item>
+    /// </list>
+    /// Every failure is reported through the returned <see cref="PlotResult"/>; nothing here throws on bad input.
+    /// </summary>
     public class CustomFilePlotLoader : PlotLoader
     {
-        private const int StaticPlot2DHeaders = 2;
-        private const int StaticPlot3DHeaders = 3;
-        private const int GeoMapHeaders = 6;
-        
-        private const int StaticPlotX = 0;
-        private const int StaticPlotY = 1;
-        private const int StaticPlotZ = 2;
-        
-        private const int DynamicPlotTime = 0;
-        private const int DynamicPlotX = 1;
-        private const int DynamicPlotY = 2;
-        private const int DynamicPlotZ = 3;
-        
-        private const int GeoMapLongitude = 0;
-        private const int GeoMapLatitude = 1;
+        public const int MaxStaticPoints = 5000;
+        public const int MaxDynamicPoints = 50;
+        public const int MaxDynamicRows = 3000;
+        public const int MaxMapLocations = 300;
+
+        private const int StaticPlot2DColumns = 2;
+        private const int StaticPlot3DColumns = 3;
+        private const int GeoMapColumns = 6;
+
+        private const int GeoMapLatitude = 0;
+        private const int GeoMapLongitude = 1;
         private const int GeoMapValue = 2;
         private const int GeoMapR = 3;
         private const int GeoMapG = 4;
         private const int GeoMapB = 5;
-        
-        
+
         private const float GeoSpawnScale = 0.01f;
         private const float GeoHeightScaleMax = 0.2f;
         private const float GeoHeightScaleMin = 0f;
-        
-        public void PlotCustomFile(string fileName, string csv)
+
+        public const string SupportedLayouts =
+            "Supported layouts: 2 columns (X, Y), 3 columns (X, Y, Z), time + X, Y, Z per point (1+3n columns), " +
+            "or 6 columns for a map (latitude, longitude, height, R, G, B).";
+
+        /// <summary>What kind of plot <see cref="PlotCustomFile"/> would build for this table, or null if unsupported.</summary>
+        public static string DescribeLayout(int columns)
         {
-            if ("".Equals(fileName))
+            if (columns == StaticPlot2DColumns) return "2D plot";
+            if (columns == StaticPlot3DColumns) return "3D plot";
+            if (columns == GeoMapColumns) return "map";
+            if (columns > 3 && (columns - 1) % 3 == 0) return "animated plot";
+            return null;
+        }
+
+        public PlotResult PlotCustomFile(string fileName, string csv)
+        {
+            var title = TitleFromFileName(fileName);
+
+            var table = CsvTable.Parse(csv, out var error);
+            if (table == null)
             {
-                Debug.LogWarning("No file selected");
+                return PlotResult.Fail(error);
             }
-            
-            if ("".Equals(csv))
+
+            var columns = table.ColumnCount;
+            if (columns < 2)
             {
-                Debug.LogWarning("Nothing in file");
+                return PlotResult.Fail("The file has only one column. CSVis needs at least two numeric columns. " + SupportedLayouts);
             }
-            
-            var headers = CsvUtils.GetColumnHeaders(csv);
-            var headersCount = headers.Count;
-            if (headersCount == StaticPlot2DHeaders)
+
+            try
             {
-                Plot2DStaticPlotFile(fileName, csv, headers);
-            } 
-            else if (headersCount == StaticPlot3DHeaders)
-            {
-                Plot3DStaticPlotFile(fileName, csv, headers);
-            } 
-            else if ((headersCount - 1 % 3) == 0)
-            {
-                PlotDynamicPlotFile(fileName, csv, headers);
+                if (columns == StaticPlot2DColumns)
+                {
+                    return PlotStatic(title, table, 2);
+                }
+
+                if (columns == StaticPlot3DColumns)
+                {
+                    return PlotStatic(title, table, 3);
+                }
+
+                if (columns == GeoMapColumns)
+                {
+                    return PlotGeographicMap(title, table);
+                }
+
+                if ((columns - 1) % 3 == 0)
+                {
+                    return PlotDynamic(title, table);
+                }
             }
-            else if ((headersCount - 1) % 3 == 0)
+            catch (Exception e)
             {
-                PlotDynamicPlotFile(fileName, csv, headers);
+                Debug.LogException(e);
+                return PlotResult.Fail("Could not build a plot from this file (" + e.GetType().Name + ").");
             }
-            else if (headersCount == GeoMapHeaders)
+
+            return PlotResult.Fail("The file has " + columns + " columns, which CSVis can't plot. " + SupportedLayouts);
+        }
+
+        private PlotResult PlotStatic(string title, CsvTable table, int dimensions)
+        {
+            var indices = new int[dimensions];
+            for (var i = 0; i < dimensions; i++)
             {
-                PlotGeographicMapFile(fileName, csv, headers);
+                indices[i] = i;
+            }
+
+            var skipped = table.ReadAlignedFloatColumns(indices, out var columns, MaxStaticPoints);
+            var points = columns[0].Count;
+            if (points == 0)
+            {
+                return PlotResult.Fail("No rows contained valid numbers in all " + dimensions + " columns.");
+            }
+
+            StaticPlotHelper.StaticPlotData data;
+            if (dimensions == 2)
+            {
+                data = new StaticPlotHelper.StaticPlotData(title, columns[0], columns[1], table.Headers[0], table.Headers[1]);
             }
             else
             {
-                Debug.LogWarning("Invalid format file");
+                data = new StaticPlotHelper.StaticPlotData(
+                    title, columns[0], columns[1], columns[2], table.Headers[0], table.Headers[1], table.Headers[2]);
             }
-        }
-
-        private void Plot2DStaticPlotFile(string fileName, string csv, List<string> headers)
-        {
-            var columnsByIndex = CsvUtils.GetContentColumnsByIndex<float>(csv, StaticPlotX, StaticPlotY);
-            var data = new StaticPlotHelper.StaticPlotData(
-                fileName,
-                columnsByIndex[StaticPlotX],
-                columnsByIndex[StaticPlotY],
-                headers[StaticPlotX],
-                headers[StaticPlotY]
-            );
 
             var plotter = StaticPlotHelper.GetStaticPlotter(data);
-            var plotContainer = Instantiate(plotter);
-            SetSpawn(plotContainer.PointHolder);
+            var plot = Instantiate(plotter);
+            SetSpawn(plot.PointHolder, title);
+
+            return Describe(title, points, skipped, table.Rows.Count, MaxStaticPoints);
         }
 
-        
-        private void Plot3DStaticPlotFile(string fileName, string csv, List<string> headers)
+        private PlotResult PlotDynamic(string title, CsvTable table)
         {
-            var columnsByIndex = CsvUtils.GetContentColumnsByIndex<float>(csv, StaticPlotX, StaticPlotY, StaticPlotZ);
-            var data = new StaticPlotHelper.StaticPlotData(
-                fileName,
-                columnsByIndex[StaticPlotX],
-                columnsByIndex[StaticPlotY],
-                columnsByIndex[StaticPlotZ],
-                headers[StaticPlotX],
-                headers[StaticPlotY],
-                headers[StaticPlotZ]
-            );
+            var pointCount = (table.ColumnCount - 1) / 3;
+            if (pointCount > MaxDynamicPoints)
+            {
+                return PlotResult.Fail("The file describes " + pointCount + " moving points. The limit is " + MaxDynamicPoints + ".");
+            }
 
-            var plotter = StaticPlotHelper.GetStaticPlotter(data);
-            var plotContainer = Instantiate(plotter);
-            SetSpawn(plotContainer.PointHolder);
-        }
-        
-                
-        private void PlotDynamicPlotFile(string fileName, string csv, List<string> headers)
-        {
-            var pointIndexes = Enumerable.Range(1, headers.Count).ToList();
-            var times = CsvUtils.GetContentColumnsByIndex<string>(csv, DynamicPlotTime)[DynamicPlotTime];
-            var columnsByIndex = CsvUtils.GetContentColumnsByIndex<float>(csv, pointIndexes.ToArray());
+            var times = table.ReadStringColumn(0, MaxDynamicRows);
             var pointColumns = new List<DynamicPlotHelper.DynamicPlotData.PointColumns>();
-            var nPoints = (headers.Count - 1) / 3; 
-            
-            for (int i = 0; i < nPoints; i++)
+            var skipped = 0;
+            var emptyPoints = 0;
+            var longest = 0;
+
+            for (var p = 0; p < pointCount; p++)
             {
-                int offset = i * 3;
-                pointColumns.Add(
-                    new DynamicPlotHelper.DynamicPlotData.PointColumns(
-                        columnsByIndex[offset + DynamicPlotX],
-                        columnsByIndex[offset + DynamicPlotY],
-                        columnsByIndex[offset + DynamicPlotZ]
-                    )
-                );
+                var offset = 1 + p * 3;
+                skipped += table.ReadAlignedFloatColumns(new[] { offset, offset + 1, offset + 2 }, out var xyz, MaxDynamicRows);
+                if (xyz[0].Count == 0)
+                {
+                    // e.g. a point that is only present for part of the recording and blank otherwise
+                    emptyPoints++;
+                    continue;
+                }
+
+                longest = Math.Max(longest, xyz[0].Count);
+                pointColumns.Add(new DynamicPlotHelper.DynamicPlotData.PointColumns(xyz[0], xyz[1], xyz[2]));
             }
-        
-            var data = new DynamicPlotHelper.DynamicPlotData(
-                fileName,
-                pointColumns,
-                times,
-                headers[DynamicPlotX],
-                headers[DynamicPlotY],
-                headers[DynamicPlotZ]
-            );
-            
-            var plotter = DynamicPlotHelper.GetDynamicPlotter(data);
-            var plotContainer = Instantiate(plotter);
-            SetSpawn(plotContainer.PointHolder);
-        }
-        
-        private void PlotGeographicMapFile(string fileName, string csv, List<string> headers)
-        {
-            var columnsByIndex = CsvUtils.GetContentColumnsByIndex<float>(csv, GeoMapLongitude, GeoMapLatitude, GeoMapValue, GeoMapR, GeoMapG, GeoMapB);
-            var geoMapPlotterHelper = gameObject.AddComponent<GeoMapPlotHelper>();
-            var numLocations = columnsByIndex[GeoMapLongitude].Count;
-            int halfIndex = numLocations/2;
-            float longitude;
-            float latitude;
-            
-            var colors = Enumerable.Range(0, numLocations).Select(i =>
-                new Color(columnsByIndex[GeoMapR][i], columnsByIndex[GeoMapG][i], columnsByIndex[GeoMapB][i])
-            ).ToList();
 
-
-            var sortedLongitudes = new List<float>(columnsByIndex[GeoMapLongitude]);
-            var sortedLatitudes = new List<float>(columnsByIndex[GeoMapLatitude]);
-            if ((numLocations % 2) == 0)
+            if (pointColumns.Count == 0)
             {
-                longitude = (sortedLongitudes.ElementAt(halfIndex) +
-                              sortedLongitudes.ElementAt(halfIndex - 1)) / 2;
-                latitude = (sortedLatitudes.ElementAt(halfIndex) +
-                             sortedLatitudes.ElementAt(halfIndex - 1)) / 2;
-            } else {
-                longitude = sortedLongitudes.ElementAt(halfIndex);
-                latitude = sortedLatitudes.ElementAt(halfIndex);
-            } 
+                return PlotResult.Fail("None of the " + pointCount + " points had any valid X, Y, Z numbers.");
+            }
 
-            var locationStrings = Enumerable.Range(0, numLocations).Select(i =>
-                columnsByIndex[GeoMapLongitude][i].ToString("n4") + ", " + columnsByIndex[GeoMapLatitude][i].ToString("n4")
-            ).ToList();
-            
+            // The time label is indexed by row, so it can never be longer than the longest point
+            if (times.Count > longest)
+            {
+                times.RemoveRange(longest, times.Count - longest);
+            }
+
+            var firstXyz = 1;
+            var data = new DynamicPlotHelper.DynamicPlotData(
+                title, pointColumns, times,
+                table.Headers[firstXyz], table.Headers[firstXyz + 1], table.Headers[firstXyz + 2]);
+
+            var plotter = DynamicPlotHelper.GetDynamicPlotter(data);
+            var plot = Instantiate(plotter);
+            SetSpawn(plot.PointHolder, title);
+
+            var result = Describe(title, pointColumns.Count, skipped, table.Rows.Count, MaxDynamicRows);
+            if (emptyPoints > 0)
+            {
+                result.Message += " " + emptyPoints + " empty point" + (emptyPoints == 1 ? " was" : "s were") + " ignored.";
+            }
+
+            return result;
+        }
+
+        private PlotResult PlotGeographicMap(string title, CsvTable table)
+        {
+            if (!MapAvailability.IsAvailable(out var reason))
+            {
+                return PlotResult.Fail(reason);
+            }
+
+            var indices = new[] { GeoMapLatitude, GeoMapLongitude, GeoMapValue, GeoMapR, GeoMapG, GeoMapB };
+            var skipped = table.ReadAlignedFloatColumns(indices, out var columns, MaxMapLocations);
+            var count = columns[GeoMapLatitude].Count;
+            if (count == 0)
+            {
+                return PlotResult.Fail("No rows had valid numbers in all 6 columns (latitude, longitude, height, R, G, B).");
+            }
+
+            float minLat = float.MaxValue, maxLat = float.MinValue, minLon = float.MaxValue, maxLon = float.MinValue;
+            for (var i = 0; i < count; i++)
+            {
+                var lat = columns[GeoMapLatitude][i];
+                var lon = columns[GeoMapLongitude][i];
+                if (lat < -85f || lat > 85f || lon < -180f || lon > 180f)
+                {
+                    return PlotResult.Fail(
+                        "Row " + (i + 1) + " has coordinates out of range. The first column must be latitude (-85 to 85) " +
+                        "and the second longitude (-180 to 180).");
+                }
+
+                minLat = Math.Min(minLat, lat);
+                maxLat = Math.Max(maxLat, lat);
+                minLon = Math.Min(minLon, lon);
+                maxLon = Math.Max(maxLon, lon);
+            }
+
+            // Colours are 0-1, but spreadsheets usually export 0-255
+            var colorScale = 1f;
+            for (var i = 0; i < count; i++)
+            {
+                if (columns[GeoMapR][i] > 1f || columns[GeoMapG][i] > 1f || columns[GeoMapB][i] > 1f)
+                {
+                    colorScale = 1f / 255f;
+                    break;
+                }
+            }
+
+            var colors = new List<Color>(count);
+            var locations = new List<string>(count);
+            for (var i = 0; i < count; i++)
+            {
+                colors.Add(new Color(
+                    Mathf.Clamp01(columns[GeoMapR][i] * colorScale),
+                    Mathf.Clamp01(columns[GeoMapG][i] * colorScale),
+                    Mathf.Clamp01(columns[GeoMapB][i] * colorScale)));
+
+                // Mapbox expects "latitude, longitude"
+                locations.Add(columns[GeoMapLatitude][i].ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture)
+                              + ", " + columns[GeoMapLongitude][i].ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture));
+            }
+
+            var centerLat = (minLat + maxLat) / 2f;
+            var centerLon = (minLon + maxLon) / 2f;
+            var zoom = ZoomForSpan(Math.Max(maxLat - minLat, maxLon - minLon));
+
+            var geoHelper = gameObject.AddComponent<GeoMapPlotHelper>();
             var data = new GeoMapPlotHelper.GeoMapData(
-                fileName,
-                longitude,
-                latitude,
-                16,
+                title,
+                centerLat,
+                centerLon,
+                zoom,
                 GeoMapPlotHelper.GeoDefaultPlotScale,
-                locationStrings,
-                columnsByIndex[GeoMapValue],
+                locations,
+                columns[GeoMapValue],
                 colors,
                 GeoSpawnScale,
                 GeoHeightScaleMax,
                 GeoHeightScaleMin,
-                PlotHelper.GetPlotHolder()
-            );
-        
-            var plotter = geoMapPlotterHelper.GetMrMap(data);
-            var plotContainer = Instantiate(plotter);
-            SetSpawn(plotContainer.MapHolder);
+                PlotHelper.GetPlotHolder());
+
+            var plotter = geoHelper.GetMrMap(data);
+            var map = Instantiate(plotter);
+            SetSpawn(map.MapHolder, title);
+
+            return Describe(title, count, skipped, table.Rows.Count, MaxMapLocations);
         }
-        
+
+        /// <summary>Picks a Mapbox zoom level that fits the data's geographic spread (in degrees).</summary>
+        public static int ZoomForSpan(float spanDegrees)
+        {
+            if (spanDegrees < 0.003f) return 17;
+            if (spanDegrees < 0.01f) return 16;
+            if (spanDegrees < 0.03f) return 15;
+            if (spanDegrees < 0.08f) return 14;
+            if (spanDegrees < 0.2f) return 13;
+            if (spanDegrees < 0.5f) return 12;
+            if (spanDegrees < 1.5f) return 10;
+            if (spanDegrees < 5f) return 8;
+            return 6;
+        }
+
+        private static PlotResult Describe(string title, int plotted, int skipped, int totalRows, int cap)
+        {
+            var message = "Plotted " + plotted.ToString("N0") + (plotted == 1 ? " point" : " points") + " from " + title + ".";
+            if (totalRows > cap)
+            {
+                message += " Only the first " + cap.ToString("N0") + " rows are shown.";
+            }
+
+            if (skipped > 0)
+            {
+                message += " " + skipped.ToString("N0") + (skipped == 1 ? " row was" : " rows were") + " skipped (not numbers).";
+            }
+
+            return PlotResult.Ok(message, plotted, skipped);
+        }
+
+        public static string TitleFromFileName(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return "CSV plot";
+            }
+
+            var name = System.IO.Path.GetFileNameWithoutExtension(fileName.Trim());
+            return string.IsNullOrWhiteSpace(name) ? "CSV plot" : name;
+        }
+
         public override void LoadPlot()
         {
-            throw new System.NotImplementedException();
+            Debug.LogWarning("CustomFilePlotLoader plots a file: call PlotCustomFile(name, csv) instead.");
         }
     }
 }

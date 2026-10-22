@@ -1,7 +1,6 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Microsoft.MixedReality.Toolkit.UI;
 
 namespace DataVisualization.Plotter
 {
@@ -59,6 +58,13 @@ namespace DataVisualization.Plotter
         // Update is called once per frame
         void Update()
         {
+            if (PointHolder == null || Points == null)
+            {
+                // The plot was deleted: stop animating points that no longer exist
+                Destroy(gameObject);
+                return;
+            }
+
             for (int i = 0; i < Points.Count; i++)
             {
                 UpdatePoint(Points[i], i);
@@ -68,6 +74,15 @@ namespace DataVisualization.Plotter
         public void Init()
         {
             Points = new List<Transform>();
+
+            if (Graph == null || Graph.PlotPoints == null || Graph.PlotPoints.Count == 0)
+            {
+                Debug.LogWarning("DynamicPlotter has no points to animate.");
+                return;
+            }
+
+            // Keep this component (it has no visuals) inside the plot so it is destroyed with it
+            transform.SetParent(PointHolder.transform, false);
 
             SetMaxMinMid();
 
@@ -105,25 +120,13 @@ namespace DataVisualization.Plotter
 
             PointHolder.transform.position = Vector3.zero; // Center pivot to origin
 
-            // Configure MRTK components of Graph, e.g. BoundingBox and ManipulationHandler
+            // Configure MRTK components of Graph (bounds handles + manipulation)
             PointHolder.AddComponent<BoxCollider>();
-            PointHolder.AddComponent<BoundingBox>();
-            PointHolder.GetComponent<BoundingBox>().WireframeEdgeRadius = PointHolder.GetComponent<BoundingBox>().WireframeEdgeRadius;
-            PointHolder.GetComponent<BoundingBox>().WireframeMaterial.color = Color.white;
-            PointHolder.AddComponent<ManipulationHandler>();
 
             // Adjust plot size
             PointHolder.transform.gameObject.GetComponent<BoxCollider>().size *= PlotScale;
 
-            // Scale handle sizes
-            PointHolder.GetComponent<BoundingBox>().ScaleHandleSize = PointHolder.GetComponent<BoundingBox>().ScaleHandleSize;
-            PointHolder.GetComponent<BoundingBox>().RotationHandleSize = PointHolder.GetComponent<BoundingBox>().RotationHandleSize;
-
-            //Optional handle prefab Models
-            PointHolder.GetComponent<BoundingBox>().HandleGrabbedMaterial = HandleGrabbedMaterial;
-            PointHolder.GetComponent<BoundingBox>().HandleMaterial = HandleMaterial;
-            PointHolder.GetComponent<BoundingBox>().ScaleHandlePrefab = ScaleHandle;
-            PointHolder.GetComponent<BoundingBox>().RotationHandleSlatePrefab = RotationHandle;
+            Manipulation.MakeManipulable(PointHolder);
 
             GraphRadius = PointHolder.GetComponent<BoxCollider>().size / 2;
 
@@ -173,13 +176,19 @@ namespace DataVisualization.Plotter
         private void UpdateTime(int index)
         {
             List<string> timePoints = Graph.TimePoints;
-            TimeText.GetComponent<TextMesh>().text = "Time: " + timePoints[index];
+            if (TimeText == null || timePoints == null || timePoints.Count == 0)
+            {
+                return;
+            }
+
+            TimeText.GetComponent<TextMesh>().text = "Time: " + timePoints[Mathf.Clamp(index, 0, timePoints.Count - 1)];
         }
 
         private void DrawTitle()
         {
             GameObject plotTitle = Instantiate(Text, Vector3.zero, Quaternion.identity);
             // Add title text
+            plotTitle.name = "title";
             plotTitle.transform.SetParent(PointHolder.transform);
             plotTitle.GetComponent<TextMesh>().text = PlotTitle;
             plotTitle.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f) * PlotScale;

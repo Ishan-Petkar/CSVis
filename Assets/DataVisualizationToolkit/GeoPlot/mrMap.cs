@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using UnityEngine;
 using Mapbox.Unity.Map;
-using Microsoft.MixedReality.Toolkit.UI;
 using Mapbox.Unity.Utilities;
 using System.Collections.Generic;
 namespace DataVisualization.Plotter
@@ -45,9 +44,20 @@ namespace DataVisualization.Plotter
 
         //used to hold the entire map itself
         private GameObject map;
+        private string appliedLocation;
+        private int appliedZoom;
+        private bool appliedTerrain;
         // Start is called before the first frame update
         void Awake()
         {
+            // The map helper AddComponents this before assigning fields and then Instantiates the
+            // configured copy; disable the unconfigured template instead of throwing every frame.
+            if (MapHolder == null)
+            {
+                enabled = false;
+                return;
+            }
+
             map = new GameObject("Map");
             //centre the map and mapHolder
 
@@ -89,6 +99,13 @@ namespace DataVisualization.Plotter
                 title.transform.position = title.transform.position + new Vector3(0, title.GetComponent<Renderer>().bounds.size.y / 2, 0);
             }
 
+            appliedLocation = location;
+            appliedZoom = zoom;
+            appliedTerrain = enable3DTerrain;
+
+            // Keep this component (it has no visuals) inside the plot so it is destroyed with it
+            transform.SetParent(MapHolder.transform, false);
+
             map.AddComponent<HistoGramOnMap>();
             map.GetComponent<HistoGramOnMap>().locationStrings = locationStrings;
             map.GetComponent<HistoGramOnMap>().heightValues = heightValues;
@@ -105,9 +122,7 @@ namespace DataVisualization.Plotter
             MapHolder.AddComponent<BoxCollider>();
             MapHolder.transform.gameObject.GetComponent<BoxCollider>().size = new Vector3(3, 2.5f, 3) * plotScale;
             MapHolder.transform.gameObject.GetComponent<BoxCollider>().center = new Vector3(0, 1.25f, 0) * plotScale;
-            MapHolder.AddComponent<BoundingBox>();
-            MapHolder.GetComponent<BoundingBox>().WireframeMaterial.color = Color.white;
-            MapHolder.AddComponent<ManipulationHandler>();
+            Manipulation.MakeManipulable(MapHolder);
         }
        
         // Update is called once per frame
@@ -124,16 +139,26 @@ namespace DataVisualization.Plotter
             {
                 zoom = 22;
             }
-            map.GetComponent<AbstractMap>().UpdateMap(Conversions.StringToLatLon(location), zoom);
-            if (enable3DTerrain)
+            if (map == null)
             {
-                ITerrainLayer terrain = map.GetComponent<AbstractMap>().Terrain;
-                terrain.SetElevationType(ElevationLayerType.LowPolygonTerrain);
+                // The map object was destroyed with its plot
+                Destroy(gameObject);
+                return;
             }
-            else
+
+            // Only touch Mapbox when something actually changed; doing it every frame forces tile reloads
+            if (location != appliedLocation || zoom != appliedZoom)
+            {
+                map.GetComponent<AbstractMap>().UpdateMap(Conversions.StringToLatLon(location), zoom);
+                appliedLocation = location;
+                appliedZoom = zoom;
+            }
+
+            if (enable3DTerrain != appliedTerrain)
             {
                 ITerrainLayer terrain = map.GetComponent<AbstractMap>().Terrain;
-                terrain.SetElevationType(ElevationLayerType.FlatTerrain);
+                terrain.SetElevationType(enable3DTerrain ? ElevationLayerType.LowPolygonTerrain : ElevationLayerType.FlatTerrain);
+                appliedTerrain = enable3DTerrain;
             }
         }
     }

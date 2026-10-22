@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b3e317e0ed004c53bf8f83bf8c9dd6a, type: 3}
+  m_Name: UIAssets
+  m_EditorClassIdentifier: Assembly-CSharp::CSVis.UI.CSVisUIAssets
+  buttonPrefab: {fileID: 3705378105823492738, guid: b85e005d231192249b7077b40a4d4e45,
+    type: 3}
+  panelPrefab: {fileID: 8510261678218358358, guid: 9d54fefbfd15f194cbaf3beeff5f6d10,
+    type: 3}
+  fontRegular: {fileID: 11400000, guid: fea6b26abeefbc547b6aca1dbda0a34d, type: 2}
+  fontSemibold: {fileID: 11400000, guid: 533bdd8d5c92b52448ee2ecf7bd828a4, type: 2}
+  logo: {fileID: 21300000, guid: a41abae5a3500a74984fe7ed90ad938b, type: 3}
+  staticPlots: {fileID: 21300000, guid: 4ab548fc5112b384e8ab9f7a2be8440a, type: 3}
+  dynamicPlots: {fileID: 21300000, guid: 12dc180e91570d9459e619319df453b7, type: 3}
+  geographicMaps: {fileID: 21300000, guid: 7dfd915257bb7cd42bd8e30b2cc49599, type: 3}
+  sineWave: {fileID: 21300000, guid: ae452f91f1376914292aa9ad18780456, type: 3}
+  iris: {fileID: 21300000, guid: 54936bb74dd18a246b817af27a7e0c88, type: 3}
+  electron: {fileID: 21300000, guid: 529e48668a707a54d8933bbb7effb687, type: 3}
+  drone: {fileID: 21300000, guid: 63795eafefd26b04da0fe9beefc4e589, type: 3}
+  dodecahedron: {fileID: 21300000, guid: e91bb01bb24a403408b34c7617e6fff4, type: 3}
+  parliament: {fileID: 21300000, guid: 55cd1649e6f45374c8aea08a53132cfd, type: 3}
+  carleton: {fileID: 21300000, guid: 492578776f3296840b167fdb6e115bdf, type: 3}

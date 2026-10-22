@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Globalization;
 using DataVisualization.Plotter;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ namespace CSVis.ExampleLoader.Helper
             var map = mapBox.AddComponent<mrMap>();
 
             map.titleName = data.Title;
-            map.location = data.Longitude.ToString("n4") + ", " + data.Latitude.ToString("n4") ;
+            map.location = data.Longitude.ToString("F6", CultureInfo.InvariantCulture) + ", " + data.Latitude.ToString("F6", CultureInfo.InvariantCulture);
             map.zoom = data.Zoom;
             map.plotScale = GeoDefaultPlotScale;
             map.MapHolder = data.PlotContainer;
