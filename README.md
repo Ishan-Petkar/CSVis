@@ -1,5 +1,24 @@
 <img src="https://i.imgur.com/6l2zpmP.png" width="322" height="100"> 
 
+## Unity 6 / HoloLens 2 update
+
+This branch (`unity6-mrtk3`) modernises the original 2018 project: **Unity 6 + MRTK3 + OpenXR** for HoloLens 2, a rebuilt professional UI, a robust CSV pipeline and production hardening.
+
+<p>
+<img src="docs/screenshots/home-menu.png" width="32%"> <img src="docs/screenshots/iris-plot.png" width="32%"> <img src="docs/screenshots/csv-and-errors.png" width="32%">
+</p>
+
+- **Open a CSV file**: layout detected automatically (2 cols = 2D, 3 = 3D, 1+3n = animated, 6 = map).
+- **Example plots**: static, animated and geographic map examples; grab, move, rotate and scale every plot.
+- **Safe by design**: friendly error messages, plot limits, confirm-before-clear, error log, build validator.
+- **Tested**: 25 EditMode + 17 PlayMode tests.
+
+Docs: [Architecture](docs/ARCHITECTURE.md) | [HoloLens build and deploy guide](HOLOLENS_BUILD.md)
+
+Try it without a headset: open `Assets/Scenes/MenuScene` in Unity 6000.4.0f1 and press Play (hold Space + mouse to move the hand, left-click to press). Binary assets use Git LFS: run `git lfs pull` after cloning.
+
+---
+
 ## CSVis
   CSVis is a play on words for Comma Separated Values Visualisation. A Unity based CSV data visualizer application for creating and viewing data plots in mixed reality through the Microsoft HoloLens. 
 

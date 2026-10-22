@@ -62,6 +62,12 @@ namespace CSVis.UI
         /// <summary>One canvas unit is one millimetre.</summary>
         public const float CanvasScale = 0.001f;
 
+        /// <summary>
+        /// Canvas children are lifted this far (mm) toward the viewer. Text drawn at exactly the same depth as the
+        /// panel behind it z-fights and shreds as the head moves.
+        /// </summary>
+        public const float FrontOffset = -1.2f;
+
         public static Canvas CreateCanvas(string name, Transform parent, Vector2 sizeMm)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
@@ -129,6 +135,7 @@ namespace CSVis.UI
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
             go.transform.SetParent(parent, false);
+            ((RectTransform)go.transform).anchoredPosition3D = new Vector3(0f, 0f, FrontOffset);
 
             var label = go.GetComponent<TextMeshProUGUI>();
             label.font = bold ? assets.fontSemibold : assets.fontRegular;
@@ -146,6 +153,7 @@ namespace CSVis.UI
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             go.transform.SetParent(parent, false);
+            ((RectTransform)go.transform).anchoredPosition3D = new Vector3(0f, 0f, FrontOffset);
 
             var image = go.GetComponent<Image>();
             image.sprite = sprite;
@@ -159,6 +167,7 @@ namespace CSVis.UI
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             go.transform.SetParent(parent, false);
+            ((RectTransform)go.transform).anchoredPosition3D = new Vector3(0f, 0f, FrontOffset);
             var image = go.GetComponent<Image>();
             image.color = color;
             image.raycastTarget = false;

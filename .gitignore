@@ -48,3 +48,6 @@ sysinfo.txt
 
 # Crashlytics generated file
 crashlytics-build.properties
+
+# Submission package (video, zip, screenshots) is delivered separately
+CSVis_Submission/
