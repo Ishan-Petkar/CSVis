@@ -54,3 +54,16 @@ The types of plots that are supported by the DVT are:
 
 <img src="https://i.imgur.com/45nOaU9.jpg" width="324" height="324"><img src="https://i.imgur.com/1Zo1bSG.jpg" width="324" height="324">
 <img src="https://i.imgur.com/LyyuP3g.jpg" width="648" height="365">
+
+<p>
+<img src="docs/photos/hololens-csvis-main-menu.jpg" width="324"> <img src="docs/photos/hololens-example-plots-menu.jpg" width="324"> <img src="docs/photos/hololens-static-plots-menu.jpg" width="324">
+</p>
+<p>
+<img src="docs/photos/hololens-sine-wave.jpg" width="324"> <img src="docs/photos/hololens-electron-scattering.jpg" width="324"> <img src="docs/photos/hololens-test-flight-data.jpg" width="324">
+</p>
+<p>
+<img src="docs/photos/hololens-holding-a-plot.jpg" width="324"> <img src="docs/photos/hololens-3d-map.jpg" width="324"> <img src="docs/photos/hololens-3d-map-closeup.jpg" width="324">
+</p>
+<p>
+<img src="docs/photos/hololens-drone-flight-path.jpg" width="648">
+</p>
