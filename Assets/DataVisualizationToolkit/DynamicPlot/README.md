@@ -1,4 +1,4 @@
-# SYSC 4907 - Mixed Reality Data Visualization Toolkit (TimeSeriesExtension)
+# Mixed Reality Data Visualization Toolkit (TimeSeriesExtension)
 
 @author Joseph Laycano
 
