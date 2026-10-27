@@ -34,7 +34,7 @@ Try it without a headset: open `Assets/Scenes/MenuScene` in Unity 6000.4.0f1 and
 <img align="right" src="https://i.imgur.com/QTaI4Gi.png" width="188" height="75">
 <img align="right" src="https://i.imgur.com/CkOymcy.png" width="188" height="75">
 
-  The application uses the open source [Data Visualization Toolkit](https://github.com/jman19/DataVisualizationPlotter) and the 
+  The application uses the open source Data Visualization Toolkit and the 
   [MixedRealityToolkit-Unity](https://github.com/Microsoft/MixedRealityToolkit-Unity/releases) by Microsoft to plot 3D data in Mixed Reality space to offer a different perspective in viewing 3D data.
 
 ## What can it do?

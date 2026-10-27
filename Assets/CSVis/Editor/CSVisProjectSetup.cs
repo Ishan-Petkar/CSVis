@@ -215,7 +215,7 @@ namespace CSVis.EditorTools
 
         private static void ConfigurePlayer()
         {
-            PlayerSettings.companyName = "Carleton University";
+            PlayerSettings.companyName = "Ishan Petkar";
             PlayerSettings.productName = "CSVis";
 
             var uwp = NamedBuildTarget.WindowsStoreApps;

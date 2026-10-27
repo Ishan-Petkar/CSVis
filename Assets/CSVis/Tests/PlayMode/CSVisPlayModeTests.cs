@@ -131,7 +131,7 @@ namespace CSVis.Tests
         {
             yield return Click("Examples");
             yield return Click("Maps");
-            foreach (var key in new[] { "MapCarleton", "MapDrone", "MapParliament" })
+            foreach (var key in new[] { "MapCampus", "MapDrone", "MapParliament" })
             {
                 var before = PlotCount();
                 yield return Click(key);

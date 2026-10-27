@@ -45,7 +45,6 @@ namespace CSVis.EditorTools
             assets.drone = Sprite("DroneIcon.png");
             assets.dodecahedron = Sprite("dodecahedron.png");
             assets.parliament = Sprite("parliament.png");
-            assets.carleton = Sprite("CU_logo_white.png");
 
             if (!assets.IsComplete(out var missing))
             {

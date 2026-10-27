@@ -45,7 +45,7 @@ Binary assets (DLLs, images, models, audio) are stored in **Git LFS**. After clo
    **MSVC v143 ARM64 build tools** and a **Windows 11 SDK**.
 3. **Git + Git LFS**, then:
    ```
-   git clone https://github.com/TheColourRed/CSVis.git
+   git clone https://github.com/Ishan-Petkar/CSVis.git
    cd CSVis
    git checkout unity6-mrtk3
    git lfs pull

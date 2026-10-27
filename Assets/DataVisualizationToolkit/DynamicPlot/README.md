@@ -1,7 +1,5 @@
 # Mixed Reality Data Visualization Toolkit (TimeSeriesExtension)
 
-@author Joseph Laycano
-
 ## Description:
 
 This toolkit is meant to allow the user to create time-series graphs/plots
@@ -23,7 +21,3 @@ that can be used within a MRTK project in Unity.
 ## Work in progress:
 * Separation of data parsing, plot creation, user manipulation and rendering
 * Overall structure and design still needs some work
-
-## In collaboration with:
-* Jason Wang
-* Kukai Beaudry

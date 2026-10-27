@@ -203,8 +203,8 @@ namespace CSVis.UI
                 Subtitle = "Needs an internet connection",
                 Cards =
                 {
-                    Example("MapCarleton", "Carleton University", "A map of the campus", assets.carleton,
-                        typeof(CarletonUniversityMapPlotLoader), true),
+                    Example("MapCampus", "Campus map", "Review ratings on a map of the campus", assets.geographicMaps,
+                        typeof(CampusMapPlotLoader), true),
                     Example("MapDrone", "Drone altitude", "Flight altitudes as a histogram", assets.drone,
                         typeof(DroneMapPlotLoader), true),
                     Example("MapParliament", "Parliament of Canada", "3D terrain of Parliament Hill", assets.parliament,

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using CSVis.ExampleLoader.Helper;
 using CSVis.IO;
@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace CSVis.ExampleLoader
 {
-    public class CarletonUniversityMapPlotLoader : PlotLoader
+    public class CampusMapPlotLoader : PlotLoader
     {
         private List<string> _locationStrings = new List<string>
         {
@@ -45,7 +45,7 @@ namespace CSVis.ExampleLoader
         
         private const int Zoom = 16;
         
-        private const string Title = "CU Dining Reviews";
+        private const string Title = "Campus Reviews";
         
         private const float SpawnScale = 0.001f;
         
@@ -55,11 +55,11 @@ namespace CSVis.ExampleLoader
         
         public override void LoadPlot()
         {
-            var map = Instantiate(GetCarletonMapper());
+            var map = Instantiate(GetCampusMapper());
             SetSpawn(map.MapHolder);
         }
 
-        public mrMap GetCarletonMapper()
+        public mrMap GetCampusMapper()
         {
             var geoMapPlotterHelper = gameObject.AddComponent<GeoMapPlotHelper>();
 

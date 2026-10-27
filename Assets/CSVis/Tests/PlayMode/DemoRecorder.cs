@@ -101,7 +101,7 @@ namespace CSVis.Tests
             yield return Tap("Back");
             yield return Tap("Maps");
             yield return Hold(0.5f);
-            yield return Tap("MapCarleton");
+            yield return Tap("MapCampus");
             Caption("Geographic maps with live Mapbox tiles");
             yield return Orbit(8f, 0.22f);
 

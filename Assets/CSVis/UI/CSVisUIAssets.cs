@@ -30,7 +30,6 @@ namespace CSVis.UI
         public Sprite drone;
         public Sprite dodecahedron;
         public Sprite parliament;
-        public Sprite carleton;
 
         private static CSVisUIAssets cached;
 

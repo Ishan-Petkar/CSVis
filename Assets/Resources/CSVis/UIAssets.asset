@@ -28,4 +28,3 @@ MonoBehaviour:
   drone: {fileID: 21300000, guid: 63795eafefd26b04da0fe9beefc4e589, type: 3}
   dodecahedron: {fileID: 21300000, guid: e91bb01bb24a403408b34c7617e6fff4, type: 3}
   parliament: {fileID: 21300000, guid: 55cd1649e6f45374c8aea08a53132cfd, type: 3}
-  carleton: {fileID: 21300000, guid: 492578776f3296840b167fdb6e115bdf, type: 3}
