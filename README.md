@@ -49,3 +49,8 @@ The types of plots that are supported by the DVT are:
 <img align="left" src="https://i.imgur.com/LTYmoCV.png" width="292" height="50"><br/><br/>
 
 <img align="left" src="https://i.imgur.com/QoxnW74.png" width="351" height="50"><br/><br/>
+
+---
+
+<img src="https://i.imgur.com/45nOaU9.jpg" width="324" height="324"><img src="https://i.imgur.com/1Zo1bSG.jpg" width="324" height="324">
+<img src="https://i.imgur.com/LyyuP3g.jpg" width="648" height="365">
