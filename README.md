@@ -4,9 +4,18 @@
 
 This branch (`unity6-mrtk3`) modernises the original 2018 project: **Unity 6 + MRTK3 + OpenXR** for HoloLens 2, a rebuilt professional UI, a robust CSV pipeline and production hardening.
 
-<p>
-<img src="docs/screenshots/home-menu.png" width="32%"> <img src="docs/screenshots/iris-plot.png" width="32%"> <img src="docs/screenshots/csv-and-errors.png" width="32%">
-</p>
+### Screenshots
+
+| | |
+|---|---|
+| ![Home menu](docs/screenshots/home-menu.png) | ![Static plots and the Iris plot](docs/screenshots/static-plots-menu-and-iris-plot.png) |
+| **Home menu**: open a CSV, browse examples, clear plots | **Static plots**: 3D Iris scatter plot with its toolbar |
+| ![Electron scattering](docs/screenshots/electron-scattering-2500-points.png) | ![Animated drone flight](docs/screenshots/animated-drone-flight-plot.png) |
+| **Electron scattering**: 2,500 points | **Animated drone flight path** |
+| ![Opening a CSV file](docs/screenshots/opening-a-csv-file-3d-plot.png) | ![Friendly error message](docs/screenshots/friendly-error-message-for-bad-file.png) |
+| **Your own CSV file**, plotted in 3D | **Clear messages** for bad files |
+| ![Clear all confirmation](docs/screenshots/clear-all-asks-for-confirmation.png) | |
+| **Clear all** asks for confirmation | |
 
 - **Open a CSV file**: layout detected automatically (2 cols = 2D, 3 = 3D, 1+3n = animated, 6 = map).
 - **Example plots**: static, animated and geographic map examples; grab, move, rotate and scale every plot.
