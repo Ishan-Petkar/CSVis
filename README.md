@@ -52,11 +52,6 @@ The types of plots that are supported by the DVT are:
 
 ---
 
-## Example Plots Demo Video 
-[![Mixed Reality Data Visualization with the Microsoft HoloLens - CSVis Example Plots Demo](https://i.imgur.com/1P8wPl5.png)](https://www.youtube.com/watch?v=XfnRXGWA0xU&feature=emb_logo "Mixed Reality Data Visualization with the Microsoft HoloLens - CSVis Example Plots Demo")
-
----
-
 ## More resources for this project
 For more resoures about the porject visit this [Google Drive](https://drive.google.com/drive/folders/1uR_geAFZh6MCw09Hn5HQ2a-pCLXNhcbJ) link. There are some more photos of the proejct in use as well as an audio presentation walikng through DVT and CSVis.
 
